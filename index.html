@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduGenie - AI Learning Assistant</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="header">
+            <div class="logo">🎓</div>
+            <h1>EduGenie</h1>
+            <p>AI-Powered Learning Assistant</p>
+            <span class="tagline">Learn • Ask • Understand • Grow</span>
+        </div>
+
+        <div class="card">
+
+            <div class="input-title">
+                <h2>Ask EduGenie 🤖</h2>
+                <p>Ask any educational question and get an AI-powered explanation.</p>
+            </div>
+
+            <textarea
+                id="question"
+                placeholder="Type your question here...">
+            </textarea>
+
+            <div class="button-group">
+
+                <button type="button" onclick="askQuestion()">
+                    🤖 Ask EduGenie
+                </button>
+                <button type="button" onclick="explainSimply()">
+    📖 Explain Simply
+</button>
+<button type="button" onclick="generateNotes()">
+    📝 Generate Notes
+</button>
+
+                <button type="button" onclick="clearAll()" class="clear-btn">
+                    🗑️ Clear
+                </button>
+
+            </div>
+
+            <div id="response">
+                Your answer will appear here...
+            </div>
+
+            <div class="history-section">
+                <h2>📚 Question History</h2>
+                <div id="history"></div>
+            </div>
+
+        </div>
+
+        <div class="footer">
+            <p>Powered by Google Gemini • EduGenie</p>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
