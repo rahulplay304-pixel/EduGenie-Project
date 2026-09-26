@@ -1,9 +1,9 @@
-
- 
 require("dotenv").config();
 
-const { GoogleGenAI } = require("@google/genai");
 const http = require("http");
+const fs = require("fs");
+const path = require("path");
+const { GoogleGenAI } = require("@google/genai");
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
@@ -11,9 +11,8 @@ const ai = new GoogleGenAI({
 
 const server = http.createServer(async (req, res) => {
 
-    // Allow browser requests
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
     if (req.method === "OPTIONS") {
@@ -22,7 +21,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // Ask Gemini
+    // Gemini AI
     if (req.method === "POST" && req.url === "/ask") {
 
         let body = "";
@@ -66,13 +65,42 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // Server test
-    res.writeHead(200, {
-        "Content-Type": "text/plain"
-    });
+    // Website files
+    let filePath;
 
-    res.end("EduGenie Server is running!");
+    if (req.url === "/") {
+        filePath = path.join(__dirname, "index.html");
+    } else {
+        filePath = path.join(__dirname, req.url);
+    }
+
+    const ext = path.extname(filePath);
+
+    const contentTypes = {
+        ".html": "text/html",
+        ".css": "text/css",
+        ".js": "application/javascript"
+    };
+
+    fs.readFile(filePath, (err, data) => {
+
+        if (err) {
+            res.writeHead(404, {
+                "Content-Type": "text/plain"
+            });
+
+            res.end("File not found");
+            return;
+        }
+
+        res.writeHead(200, {
+            "Content-Type": contentTypes[ext] || "text/plain"
+        });
+
+        res.end(data);
+    });
 });
+
 const PORT = process.env.PORT || 10000;
 
 server.listen(PORT, "0.0.0.0", () => {
