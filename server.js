@@ -73,7 +73,8 @@ const server = http.createServer(async (req, res) => {
 
     res.end("EduGenie Server is running!");
 });
+const PORT = process.env.PORT || 10000;
 
-server.listen(3000, () => {
-    console.log("EduGenie server running on http://localhost:3000");
+server.listen(PORT, "0.0.0.0", () => {
+    console.log(`EduGenie server running on 0.0.0.0:${PORT}`);
 });
