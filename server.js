@@ -1,134 +1,79 @@
-async function askQuestion() {
-    const question = document.getElementById("question").value;
-    const response = document.getElementById("response");
 
-    if (question.trim() === "") {
-        response.innerText = "Please enter a question.";
+ 
+require("dotenv").config();
+
+const { GoogleGenAI } = require("@google/genai");
+const http = require("http");
+
+const ai = new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY
+});
+
+const server = http.createServer(async (req, res) => {
+
+    // Allow browser requests
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+    if (req.method === "OPTIONS") {
+        res.writeHead(204);
+        res.end();
         return;
     }
 
-    response.innerText = "🤖 EduGenie is thinking...";
+    // Ask Gemini
+    if (req.method === "POST" && req.url === "/ask") {
 
-    try {
-        const result = await fetch("/ask", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                question: question
-            })
+        let body = "";
+
+        req.on("data", chunk => {
+            body += chunk;
         });
 
-        const data = await result.json();
+        req.on("end", async () => {
 
-        if (data.answer) {
-            response.innerText = data.answer;
+            try {
+                const { question } = JSON.parse(body);
 
-            const history = document.getElementById("history");
+                const response = await ai.models.generateContent({
+                    model: "gemini-3.8-flash",
+                    contents: question
+                });
 
-            history.innerHTML += `
-                <div class="history-item">
-                    <strong>You:</strong> ${question}
-                    <br><br>
-                    <strong>EduGenie:</strong> ${data.answer}
-                </div>
-            `;
-        } else {
-            response.innerText = "Sorry, no answer received.";
-        }
+                res.writeHead(200, {
+                    "Content-Type": "application/json"
+                });
 
-    } catch (error) {
-        response.innerText = "Server connection error.";
-        console.error(error);
-    }
-}
+                res.end(JSON.stringify({
+                    answer: response.text
+                }));
 
+            } catch (error) {
 
-function clearAll() {
-    document.getElementById("question").value = "";
+                console.error("Gemini Error:", error.message);
 
-    document.getElementById("response").innerText =
-        "Your answer will appear here...";
+                res.writeHead(500, {
+                    "Content-Type": "application/json"
+                });
 
-    document.getElementById("history").innerHTML = "";
-}
+                res.end(JSON.stringify({
+                    answer: "Gemini is temporarily unavailable. Please try again."
+                }));
+            }
+        });
 
-
-async function explainSimply() {
-    const question = document.getElementById("question").value;
-    const response = document.getElementById("response");
-
-    if (question.trim() === "") {
-        response.innerText = "Please enter a topic first.";
         return;
     }
 
-    response.innerText = "📖 EduGenie is explaining simply...";
+    // Server test
+    res.writeHead(200, {
+        "Content-Type": "text/plain"
+    });
 
-    try {
-        const result = await fetch("/ask", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                question:
-                    "Explain this topic in very simple words for a student: " +
-                    question
-            })
-        });
+    res.end("EduGenie Server is running!");
+});
 
-        const data = await result.json();
-
-        if (data.answer) {
-            response.innerText = data.answer;
-        } else {
-            response.innerText = "Sorry, no explanation received.";
-        }
-
-    } catch (error) {
-        response.innerText = "Server connection error.";
-        console.error(error);
-    }
-}
-
-
-async function generateNotes() {
-    const question = document.getElementById("question").value;
-    const response = document.getElementById("response");
-
-    if (question.trim() === "") {
-        response.innerText = "Please enter a topic first.";
-        return;
-    }
-
-    response.innerText = "📝 EduGenie is generating notes...";
-
-    try {
-        const result = await fetch("/ask", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                question:
-                    "Generate clear and easy study notes for this topic. " +
-                    "Include headings, important points, and a short conclusion: " +
-                    question
-            })
-        });
-
-        const data = await result.json();
-
-        if (data.answer) {
-            response.innerText = data.answer;
-        } else {
-            response.innerText = "Sorry, notes could not be generated.";
-        }
-
-    } catch (error) {
-        response.innerText = "Server connection error.";
-        console.error(error);
-    }
-}
+server.listen(3000, () => {
+    console.log("EduGenie server running on http://localhost:3000");
+});
