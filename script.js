@@ -10,7 +10,7 @@ async function askQuestion() {
     response.innerText = "🤖 EduGenie is thinking...";
 
     try {
-        const result = await fetch("/ask", {
+        const result = await ,fetch("/api/ask" {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
